@@ -74,6 +74,7 @@ export default function App() {
     },
   ]);
   const [input, setInput] = useState('');
+  const [pendingBookingDraft, setPendingBookingDraft] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -83,8 +84,14 @@ export default function App() {
   }, [messages]);
 
   const handleSlotClick = (slot: string) => {
-    setInput(toBookingDraft(slot));
+    const draft = toBookingDraft(slot);
+    setPendingBookingDraft(draft);
+    setInput(draft);
     window.setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const isEmailOnlyMessage = (message: string) => {
+    return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(message.trim());
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -92,6 +99,10 @@ export default function App() {
 
     const userText = input.trim();
     if (!userText || isLoading) return;
+
+    const messageForBackend = pendingBookingDraft && isEmailOnlyMessage(userText)
+      ? `${pendingBookingDraft}${userText}`
+      : userText;
 
     const userMessage: ChatMessage = {
       id: Date.now(),
@@ -115,7 +126,7 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userText,
+          message: messageForBackend,
           history,
         }),
       });
@@ -139,6 +150,12 @@ export default function App() {
           eventLink: data.eventLink,
         },
       ]);
+
+      if (data.type === 'booking_confirmation') {
+        setPendingBookingDraft('');
+      } else if (data.type === 'booking_needs_email' && messageForBackend.toLowerCase().includes('book')) {
+        setPendingBookingDraft(messageForBackend.endsWith(' ') ? messageForBackend : `${messageForBackend} `);
+      }
     } catch {
       setMessages((current) => [
         ...current,
