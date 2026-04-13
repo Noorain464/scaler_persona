@@ -1,20 +1,27 @@
-const { getBusySlots, createInterviewEvent } = require('../booking/calendarService');
-const { generateFreeSlots } = require('../booking/slotGenerator');
+const { getAvailableSlots, createInterviewEvent } = require('../booking/calendarService');
 const { validateBooking } = require('../booking/bookingValidator');
 const { retrieveContext } = require('../rag/retriever');
 
 const checkAvailability = async (dateStr) => {
-  const targetDate = new Date(dateStr);
-  const busySlots = await getBusySlots(targetDate);
-  return generateFreeSlots(targetDate, busySlots);
+  if (!dateStr) throw new Error('dateStr is required.');
+  return getAvailableSlots(dateStr);
 };
 
 const createBooking = async (name, email, start, end) => {
-  // Reusing the chat/booking logic completely
   const errorMsg = validateBooking(name, email, start, end);
   if (errorMsg) throw new Error(errorMsg);
 
-  return await createInterviewEvent({ name, email, start, end });
+  const availableSlots = await getAvailableSlots(start.slice(0, 10), { maxSlots: Number.POSITIVE_INFINITY });
+  const slotStillAvailable = availableSlots.some(slot => (
+    new Date(slot.start).getTime() === new Date(start).getTime() &&
+    new Date(slot.end).getTime() === new Date(end).getTime()
+  ));
+
+  if (!slotStillAvailable) {
+    throw new Error('That slot is no longer available. Please choose another slot.');
+  }
+
+  return createInterviewEvent({ name, email, start, end });
 };
 
 const getProfileContext = async (query) => {

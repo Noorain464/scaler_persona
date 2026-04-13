@@ -1,16 +1,22 @@
 const express = require('express');
 const { 
-  handleCheckAvailability, 
-  handleBookSlot, 
-  handleGetProfileInfo, 
-  handleGetRepoInfo 
+  checkAvailabilityController,
+  createBookingController,
+  getProfileInfoController,
+  getRepoInfoController
 } = require('../controllers/voiceController');
 
 const router = express.Router();
 
-router.post('/tool/check-availability', handleCheckAvailability);
-router.post('/tool/book', handleBookSlot);
-router.post('/tool/get-profile-info', handleGetProfileInfo);
-router.post('/tool/get-repo-info', handleGetRepoInfo);
+router.post('/check-availability', checkAvailabilityController);
+router.post('/book-meeting', createBookingController);
+router.post('/get-profile-info', getProfileInfoController);
+router.post('/get-repo-info', getRepoInfoController);
+
+// Backward-compatible aliases for any existing Vapi dashboard config.
+router.post('/tool/check-availability', checkAvailabilityController);
+router.post('/tool/book', createBookingController);
+router.post('/tool/get-profile-info', getProfileInfoController);
+router.post('/tool/get-repo-info', getRepoInfoController);
 
 module.exports = router;
