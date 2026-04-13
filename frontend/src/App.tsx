@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import './index.css';
 
 type ChatMessage = {
@@ -8,10 +9,26 @@ type ChatMessage = {
   sources?: string[];
   type?: string;
   slots?: string[];
+  eventId?: string;
   eventLink?: string;
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://scaler-persona.onrender.com';
+
+const getIstDatePart = (slot: string) => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(slot));
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+
+  return `${year}-${month}-${day}`;
+};
 
 const formatSlot = (slot: string) => {
   const label = new Intl.DateTimeFormat('en-US', {
@@ -27,12 +44,7 @@ const formatSlot = (slot: string) => {
 };
 
 const toBookingDraft = (slot: string) => {
-  const datePart = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Kolkata',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(slot));
+  const datePart = getIstDatePart(slot);
   const timePart = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Kolkata',
     hour: 'numeric',
@@ -40,6 +52,17 @@ const toBookingDraft = (slot: string) => {
   }).format(new Date(slot));
 
   return `Book ${datePart} at ${timePart} under `;
+};
+
+const shouldShowSources = (message: ChatMessage) => {
+  const lowerContent = message.content.toLowerCase();
+  const isBookingMessage = message.type === 'availability' ||
+    message.type?.startsWith('booking') ||
+    lowerContent.includes('calendar invite') ||
+    lowerContent.includes("i've booked") ||
+    lowerContent.includes('booked the meeting');
+
+  return !isBookingMessage && Boolean(message.sources?.length);
 };
 
 export default function App() {
@@ -112,6 +135,7 @@ export default function App() {
           sources: data.sources || [],
           type: data.type,
           slots: data.slots || [],
+          eventId: data.eventId,
           eventLink: data.eventLink,
         },
       ]);
@@ -121,7 +145,7 @@ export default function App() {
         {
           id: Date.now() + 1,
           role: 'assistant',
-          content: 'Sorry, I could not reach the backend. Make sure the backend is running on port 5001.',
+          content: 'Sorry, I could not reach the backend right now. Please try again in a moment.',
         },
       ]);
     } finally {
@@ -144,7 +168,7 @@ export default function App() {
           {messages.map((message) => (
             <article className={`message ${message.role}`} key={message.id}>
               <p>{message.content}</p>
-              {message.sources && message.sources.length > 0 && message.type !== 'availability' && !message.type?.startsWith('booking') && (
+              {shouldShowSources(message) && (
                 <small>Sources: {message.sources.join(', ')}</small>
               )}
               {message.slots && message.slots.length > 0 && (
@@ -160,6 +184,9 @@ export default function App() {
                 <a className="event-link" href={message.eventLink} target="_blank" rel="noreferrer">
                   Open calendar event
                 </a>
+              )}
+              {message.eventId && (
+                <small>Calendar event ID: {message.eventId}</small>
               )}
             </article>
           ))}
