@@ -1,0 +1,32 @@
+node_modules/
+.env
+.env.*
+!.env.example
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# generated JSON
+*.json
+!package.json
+!package-lock.json
+
+# sensitive local data
+src/data/raw/resume.pdf
+src/data/raw/github_profile.json
+
+# build/test output
+dist/
+build/
+coverage/
+
+# logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
