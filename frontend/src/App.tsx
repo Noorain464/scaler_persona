@@ -11,7 +11,7 @@ type ChatMessage = {
   eventLink?: string;
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://scaler-persona.onrender.com';
 
 const formatSlot = (slot: string) => {
   const label = new Intl.DateTimeFormat('en-US', {

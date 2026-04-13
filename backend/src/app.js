@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const env = require('./config/env');
 
 // Import routes
 const chatRoutes = require('./routes/chatRoutes');
@@ -12,7 +13,30 @@ const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const app = express();
 
 // Middleware
-app.use(cors());
+const configuredOrigins = (env.CORS_ORIGINS || env.FRONTEND_URL || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+const hasConfiguredOrigins = configuredOrigins.length > 0;
+
+const localOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174'
+];
+
+const allowedOrigins = [...new Set([...configuredOrigins, ...localOrigins])];
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || !hasConfiguredOrigins || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked origin: ${origin}`));
+  }
+}));
 app.use(express.json());
 
 // Route Registration
