@@ -26,7 +26,15 @@ const localOrigins = [
   'http://127.0.0.1:5174'
 ];
 
-const allowedOrigins = [...new Set([...configuredOrigins, ...localOrigins])];
+const deployedFrontendOrigins = [
+  'https://scaler-persona-iota.vercel.app'
+];
+
+const allowedOrigins = [...new Set([
+  ...configuredOrigins,
+  ...localOrigins,
+  ...deployedFrontendOrigins
+])];
 
 app.use(cors({
   origin(origin, callback) {
