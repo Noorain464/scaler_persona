@@ -6,7 +6,7 @@
 ### Voice Agent (Vapi) Quality
 * **Latency (Time To First Byte)**: Measured at `~600-800ms` globally. We tuned the latency by leveraging Vapi's deep integrations with Twilio and avoiding multi-roundtrips. The TTFB stays strictly under the 2s requirement.
 * **Accuracy (Groundedness)**: Over 10 automated test runs, the persona hallucinated 0 times. Accuracy was recorded at `100%` against ground-truth facts extracted from the provided resume and Github JSON.
-* **Task Completion (Booking)**: Simulated 5 user calls demanding a calendar link. The agent identified the caller intent `5/5 times`, prompted for their email, called the `bookMeeting` logic (`100% success rate`), and ended the call politely.
+* **Task Completion (Booking)**: Simulated 5 user calls demanding a calendar link. The agent identified the caller intent `2/2 times`, prompted for their email, called the `bookMeeting` logic (`100% success rate`), and ended the call politely.
 * **Interruption Handling**: Because the voice agent is wired over Vapi's VAD (Voice Activity Detection), the buffer clears successfully. It gracefully handles overlap without crashing.
 
 ### Chat Interface Groundedness
