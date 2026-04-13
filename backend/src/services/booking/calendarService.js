@@ -131,15 +131,21 @@ const createInterviewEvent = async (data) => {
 
     return {
       id: res.data.id,
+      status: res.data.status,
       summary: res.data.summary,
       link: res.data.htmlLink,
       meetLink: res.data.hangoutLink,
+      organizer: res.data.organizer,
+      creator: res.data.creator,
       start: data.start,
       end: data.end
     };
   } catch (error) {
     console.error('[Calendar Service] Error creating event:', error);
-    throw new Error('Failed to create calendar event.');
+    const calendarError = new Error(error.message || 'Failed to create calendar event.');
+    calendarError.code = error.code || error.response?.status || 'CALENDAR_EVENT_CREATE_FAILED';
+    calendarError.details = error.errors || error.response?.data || null;
+    throw calendarError;
   }
 };
 

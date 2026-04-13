@@ -1,5 +1,15 @@
 const constants = require('../../config/constants');
 
+const getHourInAppTimezone = (date) => {
+  const hour = new Intl.DateTimeFormat('en-US', {
+    timeZone: constants.DEFAULT_TIME_ZONE,
+    hour: '2-digit',
+    hour12: false
+  }).format(date);
+
+  return Number(hour);
+};
+
 /**
  * Validate a booking request for required fields, future time, and working hours
  * @param {string} name 
@@ -22,7 +32,7 @@ const validateBooking = (name, email, slotStart, slotEnd) => {
   }
 
   // Check if inside working hours
-  const hr = start.getHours();
+  const hr = getHourInAppTimezone(start);
   const startHr = parseInt(constants.WORKING_HOURS.start.split(':')[0], 10);
   const endHr = parseInt(constants.WORKING_HOURS.end.split(':')[0], 10);
 

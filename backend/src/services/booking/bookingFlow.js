@@ -248,6 +248,8 @@ const handleBookingFlow = async (message = '') => {
     type: 'booking_confirmation',
     answer,
     message: answer,
+    eventId: event.id,
+    eventStatus: event.status,
     eventLink: event.link,
     meetLink: event.meetLink,
     eventDetails: event
